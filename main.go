@@ -44,6 +44,7 @@ func main() {
 	fmt.Println(string(jsonData))
 
 	endpoint := "eu2.contabostorage.com"
+	fmt.Println("key len", len(os.Getenv("AWS_ACCESS_KEY_ID")))
 	accessKeyID := os.Getenv("AWS_ACCESS_KEY_ID")
 	secretAccessKey := os.Getenv("AWS_SECRET_ACCESS_KEY")
 
@@ -55,22 +56,14 @@ func main() {
 		log.Fatalln(err)
 	}
 
-	// The bucket you want to upload to.
 	bucketName := "lunch-watchdog"
-
-	// The object name for the uploaded file.
 	objectName := "menus.json"
-
-	// The content to upload, as a bytes buffer.
 	content := bytes.NewReader(jsonData)
-
-	// Setting the object metadata, including the Content-Type.
 	opts := minio.PutObjectOptions{ContentType: "application/json"}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Minute)
 	defer cancel()
 
-	// Upload the file.
 	info, err := s3Client.PutObject(ctx, bucketName, objectName, content, int64(content.Len()), opts)
 	if err != nil {
 		log.Fatalln(err)
