@@ -1,11 +1,17 @@
 package main
 
 import (
+	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"log"
+	"os"
+	"time"
 
 	"github.com/detrin/lunch-watchdog-backend/watchdog"
+	"github.com/minio/minio-go/v7"
+	"github.com/minio/minio-go/v7/pkg/credentials"
 )
 
 func main() {
@@ -36,4 +42,39 @@ func main() {
 	}
 
 	fmt.Println(string(jsonData))
+
+	endpoint := "eu2.contabostorage.com"
+	accessKeyID := os.Getenv("AWS_ACCESS_KEY_ID")
+	secretAccessKey := os.Getenv("AWS_SECRET_ACCESS_KEY")
+
+	s3Client, err := minio.New(endpoint, &minio.Options{
+		Creds:  credentials.NewStaticV4(accessKeyID, secretAccessKey, ""),
+		Secure: true,
+	})
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	// The bucket you want to upload to.
+	bucketName := "lunch-watchdog"
+
+	// The object name for the uploaded file.
+	objectName := "menus.json"
+
+	// The content to upload, as a bytes buffer.
+	content := bytes.NewReader(jsonData)
+
+	// Setting the object metadata, including the Content-Type.
+	opts := minio.PutObjectOptions{ContentType: "application/json"}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Minute)
+	defer cancel()
+
+	// Upload the file.
+	info, err := s3Client.PutObject(ctx, bucketName, objectName, content, int64(content.Len()), opts)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	log.Printf("Successfully uploaded %s of size %d\n", objectName, info.Size)
 }
