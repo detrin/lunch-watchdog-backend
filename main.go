@@ -20,20 +20,20 @@ func main() {
 	if err != nil {
 		log.Fatalf("Error scraping menu: %v", err)
 	}
-	// fmt.Printf("Menu for %s - %s\n", menuKolkovna.Name, menuKolkovna.Date)
-	// for i, item := range menuKolkovna.MenuItems {
-	// 	fmt.Printf("Item %d: %#v\n", i+1, item)
-	// }
+	fmt.Printf("Menu for %s - %s\n", menuKolkovna.Name, menuKolkovna.Date)
+	for i, item := range menuKolkovna.MenuItems {
+		fmt.Printf("Item %d: %#v\n", i+1, item)
+	}
 	menus = append(menus, *menuKolkovna)
 
 	menuMerkur, err := watchdog.ScrapeMenuMerkur()
 	if err != nil {
 		log.Fatalf("Error scraping menu: %v", err)
 	}
-	// fmt.Printf("Menu for %s - %s\n", menuMerkur.Name, menuMerkur.Date)
-	// for i, item := range menuMerkur.MenuItems {
-	// 	fmt.Printf("Item %d: %#v\n", i+1, item)
-	// }
+	fmt.Printf("Menu for %s - %s\n", menuMerkur.Name, menuMerkur.Date)
+	for i, item := range menuMerkur.MenuItems {
+		fmt.Printf("Item %d: %#v\n", i+1, item)
+	}
 	menus = append(menus, *menuMerkur)
 
 	jsonData, err := json.MarshalIndent(menus, "", "  ")
@@ -44,7 +44,6 @@ func main() {
 	fmt.Println(string(jsonData))
 
 	endpoint := "eu2.contabostorage.com"
-	fmt.Println("key len", len(os.Getenv("AWS_ACCESS_KEY_ID")))
 	accessKeyID := os.Getenv("AWS_ACCESS_KEY_ID")
 	secretAccessKey := os.Getenv("AWS_SECRET_ACCESS_KEY")
 
