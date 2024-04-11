@@ -23,9 +23,11 @@ jobs:
       run: go run main.go
 
     - name: Get Job Summary URL
-      id: exp
+      id: metadata
       uses: pl-strflt/job-summary-url-action@v1
+      with:
+        job: latest
 
     - name: Output Job Summary URL
-      run: echo '${{ steps.exp.outputs.job_summary_url }}'
+      run: echo '${{ steps.metadata.outputs.job_summary_url }}'
       shell: bash
