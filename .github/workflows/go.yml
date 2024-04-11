@@ -1,0 +1,23 @@
+name: Go Application
+
+on:
+  push:
+    branches:
+      - main 
+
+jobs:
+  build:
+    name: Run Go Application
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Check out repository
+      uses: actions/checkout@v3
+
+    - name: Set up Go
+      uses: actions/setup-go@v3
+      with:
+        go-version: '1.22'  
+
+    - name: Run Go Application
+      run: go run main.go
