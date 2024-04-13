@@ -74,7 +74,7 @@ func ScrapeMenuKolkovna() (*Menu, error) {
 }
 
 func ScrapeMenuMerkur() (*Menu, error) {
-	res, err := http.Get("http://www.restauracemerkur.cz/")
+	res, err := http.Get("http://www.restauracemerkur.cz/poledni-nabidka")
 	if err != nil {
 		return nil, fmt.Errorf("error getting URL: %w", err)
 	}
@@ -92,7 +92,7 @@ func ScrapeMenuMerkur() (*Menu, error) {
 	var menu Menu
 	var menuItems []MenuItem
 
-	header := doc.Find(".post_body h3").First()
+	header := doc.Find("#main > div.post > div.post_body > h2 > strong > em > strong > em > strong > em").First()
 	dateRgx := regexp.MustCompile(`\d+\.\d+\.\d+`)
 
 	if date := dateRgx.FindString(header.Text()); date != "" {
@@ -101,34 +101,24 @@ func ScrapeMenuMerkur() (*Menu, error) {
 			menu.Date = date_parsed
 		}
 	}
-	doc.Find("#main > div.post > div.post_body > p:nth-child(3)").Each(func(i int, s *goquery.Selection) {
-		text := s.Text()
-		withRegularSpaces := normalizeSpace(text)
-		trimmed := strings.TrimSpace(withRegularSpaces)
-		priceIndex := strings.LastIndex(trimmed, " ")
-		if priceIndex != -1 {
-			description := trimmed[:priceIndex]
-			priceText := trimmed[priceIndex+1:]
-			price, _ := parsePrice(priceText)
-			if price > 0 {
-				menuItems = append(menuItems, MenuItem{Description: description, Price: price})
-			}
-		}
-	})
 
-	doc.Find("#main > div.post > div.post_body > p").Each(func(i int, s *goquery.Selection) {
-		text := strings.TrimSpace(s.Text())
-		withRegularSpaces := normalizeSpace(text)
-		trimmed := strings.TrimSpace(withRegularSpaces)
-		priceIndex := strings.LastIndex(trimmed, " ")
-		if priceIndex != -1 {
-			description := trimmed[:priceIndex]
-			priceText := trimmed[priceIndex+1:]
-			price, _ := parsePrice(priceText)
-			if price > 0 {
-				menuItems = append(menuItems, MenuItem{Description: description, Price: price})
-			}
+	doc.Find("tr").Each(func(i int, s *goquery.Selection) {
+		tag_description := ""
+		s.Find("td:nth-child(2) > h3 > em").Each(func(i int, em *goquery.Selection) {
+			tag_description = tag_description + em.Text()
+		})
+		s.Find("td:nth-child(2) > h3 > strong > em").Each(func(i int, em *goquery.Selection) {
+			tag_description = tag_description + em.Text()
+		})
+		fmt.Println(tag_description)
+		withRegularSpaces := normalizeSpace(tag_description)
+		description := strings.TrimSpace(withRegularSpaces)
+		tag_price := s.Find("td:nth-child(3)").First().Text()
+		price, _ := parsePrice(tag_price)
+		if price > 0 {
+			menuItems = append(menuItems, MenuItem{Description: description, Price: price})
 		}
+
 	})
 	menu.Name = "Merkur"
 	menu.MenuItems = menuItems
