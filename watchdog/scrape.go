@@ -96,7 +96,7 @@ func ScrapeMenuMerkur() (*Menu, error) {
 	dateRgx := regexp.MustCompile(`\d+\.\d+\.\d+`)
 
 	if date := dateRgx.FindString(header.Text()); date != "" {
-		date_parsed, err := time.Parse("1.2.2006", date)
+		date_parsed, err := time.Parse("2.1.2006", date)
 		if err == nil {
 			menu.Date = date_parsed
 		}
