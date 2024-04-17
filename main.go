@@ -57,15 +57,31 @@ func main() {
 
 	bucketName := "lunch-watchdog"
 	objectName := "menus.json"
-	content := bytes.NewReader(jsonData)
-	opts := minio.PutObjectOptions{ContentType: "application/json"}
-
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Minute)
 	defer cancel()
 
+	_, err = s3Client.StatObject(ctx, bucketName, objectName, minio.StatObjectOptions{})
+	if err == nil {
+		// The object exists, so delete it.
+		err := s3Client.RemoveObject(ctx, bucketName, objectName, minio.RemoveObjectOptions{})
+		if err != nil {
+			log.Fatalf("Error deleting existing object: %v", err)
+		}
+		log.Printf("Successfully deleted %s\n", objectName)
+	} else {
+		// Handle errors other than "object not found."
+		if minio.ToErrorResponse(err).Code != "NoSuchKey" {
+			log.Fatalf("Error checking object: %v", err)
+		}
+	}
+
+	// Then proceed to upload the new file.
+	content := bytes.NewReader(jsonData)
+	opts := minio.PutObjectOptions{ContentType: "application/json"}
+
 	info, err := s3Client.PutObject(ctx, bucketName, objectName, content, int64(content.Len()), opts)
 	if err != nil {
-		log.Fatalln(err)
+		log.Fatalf("Error uploading new object: %v", err)
 	}
 
 	log.Printf("Successfully uploaded %s of size %d\n", objectName, info.Size)
