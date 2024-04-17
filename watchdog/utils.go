@@ -1,9 +1,12 @@
 package watchdog
 
 import (
+	"encoding/json"
 	"regexp"
 	"strconv"
 	"strings"
+
+	gtranslate "github.com/gilang-as/google-translate"
 )
 
 func parsePrice(priceText string) (int, error) {
@@ -31,4 +34,28 @@ func normalizeSpace(input string) string {
 	collapsedSpaces := spacePattern.ReplaceAllString(withSpaces, " ")
 
 	return collapsedSpaces
+}
+
+func translate(text string) (string, error) {
+	value := gtranslate.Translate{
+		Text: text,
+		//From: "cz",
+		To: "en",
+	}
+	translated, err := gtranslate.Translator(value)
+	if err != nil {
+		return "", err
+	} else {
+		prettyJSON, err := json.MarshalIndent(translated, "", "\t")
+		if err != nil {
+			panic(err)
+		}
+		// fmt.Println(string(prettyJSON))
+
+		var jsonResult struct {
+			Text string `json:"text"`
+		}
+		json.Unmarshal(prettyJSON, &jsonResult)
+		return jsonResult.Text, nil
+	}
 }

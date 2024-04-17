@@ -24,6 +24,7 @@ func main() {
 	for i, item := range menuKolkovna.MenuItems {
 		fmt.Printf("Item %d: %#v\n", i+1, item)
 	}
+	menuKolkovna.TranslateEN()
 	menus = append(menus, *menuKolkovna)
 
 	menuMerkur, err := watchdog.ScrapeMenuMerkur()
@@ -34,6 +35,7 @@ func main() {
 	for i, item := range menuMerkur.MenuItems {
 		fmt.Printf("Item %d: %#v\n", i+1, item)
 	}
+	menuMerkur.TranslateEN()
 	menus = append(menus, *menuMerkur)
 
 	jsonData, err := json.MarshalIndent(menus, "", "  ")
